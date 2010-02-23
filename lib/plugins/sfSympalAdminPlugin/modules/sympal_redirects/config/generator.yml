@@ -1,0 +1,30 @@
+generator:
+  class:                   <?php echo sfSympalConfig::getAdminGeneratorClass() ?> 
+  param:
+    model_class:           sfSympalRedirect
+    theme:                 <?php echo sfSympalConfig::getAdminGeneratorTheme() ?> 
+    non_verbose_templates: true
+    with_show:             false
+    singular:              ~
+    plural:                ~
+    route_prefix:          sympal_redirects
+    with_doctrine_route:   true
+    actions_base_class:    sfActions
+
+    config:
+      actions: ~
+      fields:  ~
+      list:
+        display: [=source, destination_text]
+      filter:
+        display: [source, destination, content_id]
+      form:
+        fields:
+          source:
+            help: "The source path to redirect. Example: /some_page"
+          destination:
+            help: "The destination to redirect to: Example: /new_url, @some_route or http://www.someurl.com"
+          content_id:
+            help: "The content record to redirect to instead of a manual entered destination above."
+      edit:    ~
+      new:     ~

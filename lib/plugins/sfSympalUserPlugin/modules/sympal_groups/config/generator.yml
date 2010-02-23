@@ -1,0 +1,26 @@
+generator:
+  class:                   <?php echo sfSympalConfig::getAdminGeneratorClass() ?> 
+  param:
+    model_class:           sfGuardGroup
+    theme:                 <?php echo sfSympalConfig::getAdminGeneratorTheme() ?> 
+    non_verbose_templates: true
+    with_show:             false
+    singular:              ~
+    plural:                ~
+    route_prefix:          sympal_groups
+    with_doctrine_route:     1
+
+    config:
+      actions: ~
+      fields:  ~
+      list:
+        display: [=name, description]
+        layout: stacked
+      filter:
+        class: false
+      form:
+        display:
+          "Group Information": [name, description]
+          "Associated Records": [permissions_list, menu_items_list, content_list, users_list]
+      edit:    ~
+      new:     ~
