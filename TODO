@@ -1,0 +1,33 @@
+## 1.0
+
+### Bug Fixes and Improvements
+
+### Performance
+
+#### Eliminate Joins
+
+* Cache sfSympalContentType data so we do not need to join it on content and menu item queries
+* Cache Site record for application and remove Site join from menu and content queries
+* Add denormalized cache for list of groups on content record and menu items to avoid m2m joins to retrieve groups
+
+#### Possibilities?
+
+* Test if loading content slots in another query is faster than left joining them in the main query.
+
+### New Documentation Chapters
+
+### I18N
+
+Missing translations:
+
+* "Save Order >>" in nested set editor
+* Upgrade module
+* Server check
+* Most admin generator action titles
+
+## 1.1
+
+* Add enhancement for assets organization. Allow the following: global assets 
+for all sites, site specific assets and user assets.
+* Make configuration in app.yml allow site specific configuration. May require
+making a custom config handler and changing to a sympal.yml

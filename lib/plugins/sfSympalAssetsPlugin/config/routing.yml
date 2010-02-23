@@ -1,0 +1,52 @@
+sympal_assets:
+  url:    /admin/assets
+  params: { module: sympal_assets, action: index }
+
+sympal_assets_create_directory:
+  url:    /admin/assets/create/directory
+  class:  sfRequestRoute
+  params: { module: sympal_assets, action: create_directory }
+  requirements: { sf_method: post }
+
+sympal_assets_delete_directory:
+  url:    /admin/assets/delete/directory
+  class:  sfRequestRoute
+  params: { module: sympal_assets, action: delete_directory }
+  requirements: { sf_method: get }
+
+sympal_assets_create_asset:
+  url:    /admin/assets/create/asset
+  class:  sfRequestRoute
+  params: { module: sympal_assets, action: create_asset }
+  requirements: { sf_method: post }
+
+sympal_assets_edit_asset:
+  url:    /admin/assets/edit/asset/:id
+  params: { module: sympal_assets, action: edit_asset }
+  class: sfDoctrineRoute
+  options:
+    type: object
+    model: sfSympalAsset
+  requirements:
+    sf_method: [get, post]
+
+sympal_assets_delete_asset:
+  url:    /admin/assets/delete/asset/:id
+  class:  sfRequestRoute
+  params: { module: sympal_assets, action: delete_asset }
+  class: sfDoctrineRoute
+  options:
+    type: object
+    model: sfSympalAsset
+
+sympal_assets_select:
+  url:    /assets/select
+  param: { module: sympal_assets, action: select }
+
+sympal_assets_save_image_crop:
+  url:    /assets/save_image_crop/:id
+  param: { module: sympal_assets, action: save_image_crop }
+  class: sfDoctrineRoute
+  options:
+    type: object
+    model: sfSympalAsset

@@ -1,0 +1,353 @@
+prod:
+  sympal_config:
+    minifier:
+      enabled:   true
+
+all:
+  sympal_config:
+    # Configure whether or not the Sympal system is online
+    offline:
+      enabled: false
+      module: sympal_default
+      action: offline
+
+    # Configure what to do when you access some content that is not published yet
+    unpublished_content:
+      forward_to: [sympal_default, unpublished_content]
+      forward_404: false
+
+    # Configure what forms and date fields should be replaced by jQuery rich date
+    rich_date_forms:
+      sfSympalContentForm: [date_published]
+      sfSympalMenuItemForm: [date_published]
+
+    # Configure the default culture
+    default_culture: en
+    
+    # used for outputting date published slot. See sfDateFormat::getPattern()
+    # http://trac.symfony-project.org/browser/branches/1.4/lib/i18n/sfDateFormat.class.php
+    date_published_format: D
+
+    # Configure whether or not to allow the theme to be changed with a 
+    # parameter in the url named sf_sympal_theme. Example: ?sf_sympal_theme=wordpress_default
+    # The value will also be remembered in the users session
+    allow_changing_theme_by_url: true
+    theme_request_parameter_name: sf_sympal_theme
+
+    # Configure the modules which are Sympal admin modules. This allows us to
+    # automatically load the admin theme for these modules.
+    admin_modules:
+      sympal_admin: ~
+      sympal_config: ~
+      sympal_content: ~
+      sympal_content_slots: ~
+      sympal_content_menu_item: ~
+      sympal_content_types: ~
+      sympal_dashboard: ~
+      sympal_redirects: ~
+      sympal_sites: ~
+      sympal_themes: ~
+      sympal_users: ~
+      sympal_groups: ~
+      sympal_permissions: ~
+      sympal_menu_items: ~
+      sympal_plugin_manager: ~
+      sympal_assets: ~
+      sympal_upgrade: ~
+      sympal_search: ~
+
+    # Minify css and javascript
+    minifier:
+      enabled: false
+      exclude:
+        - /sfSympalPlugin/tiny_mce/tiny_mce.js
+        - /sfJqueryReloadedPlugin/js/jquery-1.3.2.min.js
+
+    # Configure some defaults for inline editing
+    inline_editing:
+      enabled: true
+      default_column_form: sfSympalInlineEditContentColumnForm
+      default_slot_form: sfSympalInlineEditContentSlotForm
+      default_form_renderer: sympal_edit_slot/slot_editor_renderer
+
+    # Configure the default rendering module and action
+    default_rendering_module: sympal_content_renderer
+    default_rendering_action: index
+
+    # Configure the default content template
+    default_content_template: sympal_default/default_content_template
+
+    # Configure the google analytics code to automatically add to your website
+    google_analytics_code: ~
+
+    # Default menu to install plugin content types to
+    default_install_content_type_menu: primary
+
+    # Configure the name of the user, group and permission models Sympal should reference
+    user_model: sfGuardUser
+    group_model: sfGuardGroup
+    permission_model: sfGuardPermission
+
+    # Configure where we should redirect after successfully signing in.
+    # The default is either the referrer or the homepage
+    success_signin_url: ~
+
+    # Configure forms that should have recaptcha enabled
+    recaptcha_forms: [sfGuardRegisterForm]
+
+    # The displayed name. You can change this to the project name you build on top of Sympal for example.
+    sympal_name: Sympal
+
+    # Configure the available content templates for the different content types
+    # Every content type must have a template named "default_view"
+    page:
+      default_inline_editing_column_form: sfSympalPageForm
+      default_rendering_module: ~
+      default_rendering_action: ~
+      default_content_template: ~
+      default_theme: ~
+      content_templates:
+        default_view:
+          template: sympal_page/view
+        register:
+          template: sympal_register/page_template
+    content-list:
+      default_rendering_module: ~
+      default_rendering_action: ~
+      content_templates:
+        default_view:
+          template: sympal_content_list/view
+
+    # Configure Sympal themes
+    themes:
+      default:
+        available: true
+        disabled: false
+        layout: default
+        stylesheets:
+          - /sfSympalPlugin/css/default.css
+
+      wordpress_default:
+        available: true
+        disabled: false
+        layout: wordpress
+        stylesheets:
+          - /sfSympalPlugin/css/wordpress.css
+
+      sympal:
+        available: true
+        disabled: false
+        layout: sympal
+        stylesheets:
+          - /sfSympalPlugin/css/sympal.css
+
+      admin:
+        available: false # Don't show in the list of available themes to switch to
+        disabled: false
+        layout: admin
+        admin_generator_class: sfSympalDoctrineGenerator
+        admin_generator_theme: sympal_admin
+        javascripts:
+          - /sfSympalPlugin/js/jQuery.cookie.js
+          - /sfSympalPlugin/fancybox/jquery.fancybox.js
+          - /sfSympalAdminPlugin/js/admin.js
+          - /sfSympalPlugin/js/shortcuts.js
+        stylesheets:
+          - /sfSympalPlugin/fancybox/jquery.fancybox.css
+          - /sfSympalAdminPlugin/css/global.css
+          - /sfSympalAdminPlugin/css/default.css
+          - /sfSympalAdminPlugin/css/admin.css
+        callables:
+          - [sfSympalToolkit, useJQuery]
+
+    # Automatically set the response meta title based on the current content and menu item
+    auto_seo:
+      title: true
+      title_format: %site_title% %separator% %ancestors%
+
+    # Override the path of any bundled asset (js or css)
+    # Used with the sfSympalConfig::getAssetPath() helper method
+    # echo sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/js/editor.js); // /js/my_editor.js
+    asset_paths:
+      #"/sfSympalEditorPlugin/js/editor.js": "/js/my_editor.js"
+
+    # Customize the path to the loaded jQuery instance and any plugins
+    jquery_reloaded:
+      path: ~
+      plugin_paths: ~
+
+    # Enable and disable the markdown editor. When disabled a normal textarea is used
+    enable_markdown_editor: true
+
+    # Enable and disable the elastic textareas
+    elastic_textareas: true
+
+    # Enable and disable the orm cache globally or control individual queries
+    orm_cache:
+      enabled: true
+      result: false
+      lifetime: 86400
+      queries:
+        sympal_get_content_types:
+          enabled: true
+          lifetime: 86400
+        sympal_get_user:
+          enabled: true
+          lifetime: 86400
+        sympal_context_get_site:
+          enabled: true
+          lifetime: 86400
+        sympal_get_content:
+          enabled: true
+          lifetime: 86400
+
+    # Configure Sympal page caching. Enabling this feature turns on page caching for all pages
+    page_cache:
+      super: false
+      enabled: false
+      with_layout: false
+      lifetime: 3600
+
+    # Configure Sympal menu caching. Enabling this feature will cache the built menu objects avoiding
+    # database queries for menus
+    menu_cache:
+      enabled: true
+
+    # Configure and customize the available content slot types
+    content_slot_types:
+      #MySlotType:
+      #  label: Label of My Slot Type
+      #  renderer: sfSympalContentSlotMySlotRenderer
+      #  form: MySlotForm (defaults to sfSympalInlineEditContentSlotForm)
+      #  widget_class: MySlotTypeWidget (defaults to sfWidgetFormSympalMySlotType)
+      #  widget_options: []
+      #  validator_class: MySlotTypeValidator (defaults to sfValidatorFormSympalMySlotType)
+      #  validator_options: []
+      Text:
+        label: Single Line of Text
+        form: sfSympalInlineEditContentSlotForm
+        form_renderer: sympal_edit_slot/slot_editor_renderer
+      RawHtml:
+        label: Raw HTML
+        form: sfSympalInlineEditContentSlotForm
+        form_renderer: sympal_edit_slot/slot_editor_renderer
+      Markdown:
+        label: Markdown Editor
+        form: sfSympalInlineEditContentSlotForm
+        form_renderer: sympal_edit_slot/slot_editor_renderer
+      TinyMCE:
+        label: TinyMCE Rich Text Editor
+        form: sfSympalInlineEditContentSlotForm
+        form_renderer: sympal_edit_slot/slot_editor_renderer
+        widget_options:
+          config: 'handle_event_callback : "sympalHandleTinyMCEEvent"'
+        
+
+    # Enable and disable the check for upgrades via the web when on the Sympal dashboard
+    check_for_upgrades_on_dashboard: false
+
+    # Whether or not to enable all modules found in your project
+    enable_all_modules: true
+
+    # Array of modules to disable
+    disabled_modules: []
+
+    # Callback to retrieve the cache driver used for storing various Sympal cache entries
+    get_cache_driver_callback: [sfSympalCache, getCacheDriver]
+
+    # Customize the class used for managing menus
+    menu_manager_class: sfSympalMenuSiteManager
+
+    # Customize the menu class used to render site menus
+    menu_class: sfSympalMenuSite
+
+    # Customize the menu class used to render site breadcrumbs
+    breadcrumbs_class: sfSympalMenuBreadcrumbs
+
+    # Customize the admin module web directory
+    admin_module_web_dir: "/sfSympalAdminPlugin"
+
+    # Configure the Symfony Plugin API username and password
+    # Required for the php symfony sympal:report-statistics task
+    plugin_api:
+      username:
+      password:
+
+    # Configure the available formats to render content in
+    content_formats:
+      - html
+      - atom
+      - feed
+      - atom1
+      - rss
+      - rss10
+      - rss091
+      - rss201
+      - xml
+      - yml
+      - json
+
+    # Configure the string used to separate breadcrumb strings
+    breadcrumbs_separator: ' / '
+
+    # Configure internationalization
+    i18n: false
+
+    # Configure what models and fields get internationalized by Sympal
+    internationalized_models:
+      sfSympalContent: [i18n_slug, page_title, meta_keywords, meta_description]
+      sfSympalContentSlot: [value]
+      sfSympalMenuItem: [label]
+      sfSympalPage: [title]
+      sfSympalSite: [page_title, meta_keywords, meta_description]
+
+    # Configure what models are sluggable
+    sluggable_models:
+      sfSympalContent:
+        builder: [sfSympalContent, slugBuilder]
+      sfSympalSite:
+        fields: [title]
+        indexName: site_sluggable
+      sfSympalContentType:
+        fields: [label]
+        indexName: content_type_sluggable
+      sfSympalAsset:
+        fields: [path, name]
+        indexName: asset_sluggable
+        builder: [sfSympalAsset, slugBuilder]
+
+    # Configure e-mail settings
+    default_from_email_address: noreply@sympalphp.org
+
+    # Configure form class used for editing the Sympal configuration from the web
+    config_form_class: sfSympalConfigForm
+
+    # Configure recaptcha from sfFormExtraPlugin
+    recaptcha_public_key: 6Ld2DgQAAAAAAApXLteupHPcbSxbSHkhNTuYLChX
+    recaptcha_private_key: 6Ld2DgQAAAAAANIbaXJsFEBOyg56CL_ljy3APlPb
+    
+    gravatar_default_image: "/sfSympalPlugin/images/symfony_button.gif"
+
+    # Configure the available languages
+    language_codes: []
+
+    # Configure the default theme to render Sympal with
+    default_theme: default
+
+    # Configure the name of the theme to use for Sympal admin areas
+    admin_theme: admin
+
+    # Configure the default admin generator theme and class to use if one is 
+    # not specified for the loaded theme
+    default_admin_generator_theme: sympal_admin
+    admin_generator_class: sfSympalDoctrineGenerator
+
+    # Configure the number of rows per page to use when using pagination
+    rows_per_page: 10
+
+    # Configure the sources to find Sympal plugins to download and install
+    # This can be a SVN repository or a local directory.
+    plugin_sources: ["http://svn.symfony-project.com/plugins"]
+
+    # Allowed markdown styled boxes
+    markdown_styled_boxes: [quote, tip, caution, note]

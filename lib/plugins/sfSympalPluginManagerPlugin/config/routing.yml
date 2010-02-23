@@ -1,0 +1,34 @@
+# sfSympalPluginManagerPlugin routing
+
+sympal_plugin_manager:
+  class: sfDoctrineRouteCollection
+  options:
+    model:                sfSympalPlugin
+    module:               sympal_plugin_manager
+    prefix_path:          /admin/plugins
+    column:               id
+    with_wildcard_routes: true
+
+sympal_plugin_manager_view:
+  url:  /admin/plugins/:plugin/view
+  param: { module: sympal_plugin_manager, action: view }
+
+sympal_plugin_manager_install:
+  url:  /admin/plugins/:plugin/install
+  param: { module: sympal_plugin_manager, action: install }
+
+sympal_plugin_manager_uninstall:
+  url:  /admin/plugins/:plugin/uninstall
+  param: { module: sympal_plugin_manager, action: uninstall }
+
+sympal_plugin_manager_download:
+  url:  /admin/plugins/:plugin/download
+  param: { module: sympal_plugin_manager, action: download }
+
+sympal_plugin_manager_delete:
+  url:  /admin/plugins/:plugin/delete
+  param: { module: sympal_plugin_manager, action: delete }
+
+sympal_plugin_manager_batch_action:
+  url:  /admin/plugins/batch_action
+  param: { module: sympal_plugin_manager, action: batch_action }

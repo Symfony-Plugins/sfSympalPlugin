@@ -1,0 +1,22 @@
+#content {
+  margin: auto;
+  background: #fff;
+  width: 700px;
+  padding: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#content #user {
+  float: left;
+  width: 300px;
+}
+
+#content #database {
+  float: right;
+  width: 300px;
+}
+
+#content #plugins {
+  clear: both;
+}
