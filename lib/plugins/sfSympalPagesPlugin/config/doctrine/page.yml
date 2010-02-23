@@ -1,6 +1,0 @@
-sfSympalPage: 
-  actAs: [sfSympalContentTypeTemplate]
-  columns: 
-    title:
-      type: string(255)
-      notnull: true

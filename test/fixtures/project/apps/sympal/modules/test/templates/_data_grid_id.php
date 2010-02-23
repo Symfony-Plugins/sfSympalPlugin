@@ -1,1 +1,0 @@
-partial_<?php echo $dataGrid->getRecordColumnValue($record, $column) ?>
