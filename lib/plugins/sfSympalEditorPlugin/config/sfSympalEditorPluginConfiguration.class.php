@@ -80,26 +80,24 @@ class sfSympalEditorPluginConfiguration extends sfPluginConfiguration
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/js/jQuery.elastic.js'));
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/js/jquery.Jcrop.min.js'));
 
-      // Load markitup markdown editor
-      if (sfSympalConfig::get('enable_markdown_editor'))
-      {
-        $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/markitup/jquery.markitup.js'));
-        $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/markitup/sets/markdown/set.js'));
-        $response->addStylesheet(sfSympalConfig::getAssetPath('/sfSympalPlugin/markitup/skins/markitup/style.css'));
-        $response->addStylesheet(sfSympalConfig::getAssetPath('/sfSympalPlugin/markitup/sets/markdown/style.css'));
-      }
-
       // Load tinymce
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/tiny_mce/tiny_mce.js'));
 
       // Load the sympal editor js and css
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/js/editor.js'));
       $response->addStylesheet(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/css/editor.css'));
+      
+      // Load the js and css for the slot editing
+      $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/js/slots.js'));
+      $response->addStylesheet(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/css/slots.css'));
 
       // Fancybox
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/fancybox/jquery.fancybox.js'));
       $response->addStylesheet(sfSympalConfig::getAssetPath('/sfSympalPlugin/fancybox/jquery.fancybox.css'));
-
+      
+      // Ajax form submission
+      $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/js/jQuery.form.js'));
+      
       // Shortcuts
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/js/shortcuts.js'));
 
