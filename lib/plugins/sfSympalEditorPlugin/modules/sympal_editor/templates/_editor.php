@@ -1,25 +1,3 @@
-<style type="text/css">
-<?php if ($sf_request->getCookie('sympal_inline_edit_mode') == 'true'): ?>
-  .sympal_inline_edit_bar_edit_buttons
-  {
-    display: normal;
-  }
-  input.toggle_edit_mode
-  {
-    display: none;
-  }
-<?php else: ?>
-  .sympal_inline_edit_bar_edit_buttons
-  {
-    display: none;
-  }
-  input.toggle_edit_mode
-  {
-    display: normal;
-  }
-<?php endif; ?>
-</style>
-
 <input type="hidden" id="sympal_base_url" value="<?php echo url_for('@homepage', 'absolute=true') ?>" />
 <input type="hidden" id="sympal_save_slots_url" value="<?php echo url_for('@sympal_save_content_slots?content_id='.$sf_sympal_content->getId()) ?>" />
 
@@ -45,9 +23,6 @@
   </div>
 </div>
 
-<div id="sympal_assets"></div>
-<div id="sympal_links"></div>
-<div id="sympal_objects"></div>
-
-<div id="sympal_slot_errors"></div>
-<div id="sympal_slot_errors_icon"></div>
+<div id="sympal_assets" class="sympal_inline_edit_bar_area"></div>
+<div id="sympal_links" class="sympal_inline_edit_bar_area"></div>
+<div id="sympal_objects" class="sympal_inline_edit_bar_area"></div>

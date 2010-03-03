@@ -1,10 +1,10 @@
-/**
+/*
  * Inline slot wrapping styles
  */
-.edit_slot_wrapper {
+.sympal_slot_wrapper {
   position: relative;
 }
-a.edit_slot_button {
+a.sympal_slot_button {
   position: absolute;
   z-index: 100;
   top: 0;
@@ -21,16 +21,23 @@ a.edit_slot_button {
   -moz-opacity:0.9;
   opacity:0.9;
 }
-a.edit_slot_button:hover {
+a.sympal_slot_button:hover {
   color: #000;
+}
+
+/*
+ * surrounds the inline form
+ */
+.sympal_slot_form {
+  display: none;
 }
 
 /**
  * General form styles for slots
  */
-.sympal_slot_editor form input,
-.sympal_slot_editor form select,
-.sympal_slot_editor form textarea {
+.sympal_slot_form input,
+.sympal_slot_form select,
+.sympal_slot_form textarea {
 	padding: 0.40em;
 	border:1px solid #ddd;
 	background: #fafafa;
@@ -41,18 +48,27 @@ a.edit_slot_button:hover {
   border-radius: 0.4em;
   color: #333
 }
-.sympal_slot_editor form input:hover,
-.sympal_slot_editor form input:focus,
-.sympal_slot_editor form select:hover,
-.sympal_slot_editor form select:focus,
-.sympal_slot_editor form textarea:hover,
-.sympal_slot_editor form textarea:focus {
+.sympal_slot_form input:hover,
+.sympal_slot_form input:focus,
+.sympal_slot_form select:hover,
+.sympal_slot_form select:focus,
+.sympal_slot_form textarea:hover,
+.sympal_slot_form textarea:focus {
 	border-color:#c5c5c5;
 	background:#ffffcc;
 }
-.sympal_slot_editor form input, .sympal_content_slot_editor textarea {
-  width: 400px;
+.sympal_slot_form input, .sympal_content_slot_editor textarea {
+  width: 98% !important;
   display: block;
+}
+
+.sympal_slot_form input.button {
+  display: inline;
+  width: auto !important;
+}
+
+.sympal_slot_form img.loading_anim {
+  display: none;
 }
 
 /**
@@ -60,14 +76,12 @@ a.edit_slot_button:hover {
  */
 #sympal_slot_flash {
   position: absolute;
+  z-index: 100;
+  right: 0;
 }
 .sympal_notice, .sympal_error {
   background: #c5c5c5;
-  filter:alpha(opacity=90);
-  -moz-opacity:0.9;
-  opacity:0.9;
   width: 100%;
-  display: block;
   padding: 5px;
   text-align: center;
   font-size: 16px;

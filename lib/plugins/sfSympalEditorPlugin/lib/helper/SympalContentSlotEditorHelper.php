@@ -1,6 +1,11 @@
 <?php
 
-
+/**
+ * Renders the inline edit menu, which consists of buttons such as the
+ * assets and links buttons
+ * 
+ * @return string
+ */
 function get_sympal_inline_edit_bar_buttons()
 {
   $sympalContext = sfSympalContext::getInstance();
@@ -9,11 +14,6 @@ function get_sympal_inline_edit_bar_buttons()
 
   $menu = new sfSympalMenuInlineEditBarButtons('Inline Edit Bar Buttons');
   $menu->setUlClass('sympal_inline_edit_bar_buttons');
-
-  $menu->
-    addChild('<div class="sympal_inline_edit_loading"></div>')->
-    isButton(false)
-  ;
 
   if ($content->getEditableSlotsExistOnPage())
   {
@@ -38,15 +38,22 @@ function get_sympal_inline_edit_bar_buttons()
 /**
  * Returns the form tag for the form that saves a content slot
  * 
- * @param sfForm              $form         The form object for this slot
- * @param sfSympalContentSlot $contentSlot  The content slot that is being modified
+ * @param sfForm  $form The form object for this slot
+ * @param sfSympalContentSlot $contentSlot The content slot that is being modified
+ * @param string $editMode The edit mode (e.g. in-place) for this form
  */
-function get_sympal_slot_form_tag(sfForm $form, sfSympalContentSlot $contentSlot)
+function get_sympal_slot_form_tag(sfForm $form, sfSympalContentSlot $contentSlot, $editMode)
 {
   $url = url_for('sympal_save_content_slot', array(
     'id' => $contentSlot->id,
     'content_id' => $contentSlot->getContentRenderedFor()->id,
   ));
   
-  return $form->renderFormTag($url, array('method' => 'post'));
+  $options = array(
+    'method' => 'post',
+    'class' => $editMode,
+    'id' => 'sympal_slot_form_'.$contentSlot->id,
+  );
+  
+  return $form->renderFormTag($url, $options);
 }

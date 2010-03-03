@@ -167,9 +167,17 @@ abstract class PluginsfSympalContent extends BasesfSympalContent
 
     return $contentSlotRef;
   }
-
-  public function getOrCreateSlot($name, $type = null, $renderFunction = null, $options = array())
+  
+  /**
+   * Retrieves or creates an sfSympalContentSlot object with the given
+   * name for this sfSympalContent object
+   * 
+   * @return sfSympalContent
+   */
+  public function getOrCreateSlot($name, $options = array())
   {
+    $type = isset($options['type']) ? $options['type'] : null;
+    
     if (!$hasSlot = $this->hasSlot($name))
     {
       $isColumn = $this->hasField($name) ? true : false;
@@ -177,13 +185,7 @@ abstract class PluginsfSympalContent extends BasesfSympalContent
 
       $slot = new sfSympalContentSlot();
       $slot->is_column = $isColumn;
-      
-      if ($slot->is_column && is_null($renderFunction))
-      {
-        $renderFunction = 'get_sympal_content_property';
-      }
 
-      $slot->render_function = $renderFunction;
       $slot->name = $name;
       $slot->type = $type;
       if (isset($options['default_value']))
@@ -811,5 +813,33 @@ abstract class PluginsfSympalContent extends BasesfSympalContent
       $searchData[$slot->getName()] = $slot->getValue();
     }
     return $searchData;
+  }
+  
+  /**
+   * Used by sfSympalContentSlot to render the created_at_id slot value
+   * 
+   * @see sfSympalContentSlot::getValueForRendering()
+   * @return string
+   */
+  public function getCreatedByIdSlotValue(sfSympalContentSlot $slot)
+  {
+    return $this->created_by_id ? $this->CreatedBy->username : 'nobody';
+  }
+  
+  /**
+   * Used by sfSympalContentSlot to render the date_published slot value
+   * 
+   * @see sfSympalContentSlot::getValueForRendering()
+   * @return string
+   */
+  public function getDatePublishedSlotValue(sfSympalContentSlot $slot)
+  {
+    if ($this->date_published)
+    {
+      sfSympalToolkit::loadHelpers('Date');
+      return format_datetime($this->date_published, sfSympalConfig::get('date_published_format'));
+    } else {
+      return '0000-00-00';
+    }
   }
 }
