@@ -172,7 +172,7 @@ abstract class PluginsfSympalContent extends BasesfSympalContent
    * Retrieves or creates an sfSympalContentSlot object with the given
    * name for this sfSympalContent object
    * 
-   * @return sfSympalContent
+   * @return sfSympalContentSlot
    */
   public function getOrCreateSlot($name, $options = array())
   {
@@ -182,8 +182,14 @@ abstract class PluginsfSympalContent extends BasesfSympalContent
     {
       $isColumn = $this->hasField($name) ? true : false;
       $type = $type ? $type : 'Text';
+      
+      if (!$isColumn && $type == 'Column')
+      {
+        throw new sfException('Cannot set a non-column slot to type "Column"');
+      }
 
       $slot = new sfSympalContentSlot();
+      $slot->setContentRenderedFor($this);
       $slot->is_column = $isColumn;
 
       $slot->name = $name;
@@ -197,12 +203,6 @@ abstract class PluginsfSympalContent extends BasesfSympalContent
       $this->addSlot($slot);
     } else {
       $slot = $this->getSlot($name);
-    }
-
-    if ($type != null && $slot->type != $type)
-    {
-      $slot->type = $type;
-      $slot->save();
     }
 
     $slot->setContentRenderedFor($this);
@@ -839,7 +839,7 @@ abstract class PluginsfSympalContent extends BasesfSympalContent
       sfSympalToolkit::loadHelpers('Date');
       return format_datetime($this->date_published, sfSympalConfig::get('date_published_format'));
     } else {
-      return '0000-00-00';
+      return 'unpublished';
     }
   }
 }
