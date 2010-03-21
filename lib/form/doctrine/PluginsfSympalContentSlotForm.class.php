@@ -29,7 +29,21 @@ abstract class PluginsfSympalContentSlotForm extends BasesfSympalContentSlotForm
     if (isset($this['value']))
     {
       $this->useFields(array('value', 'type'));
-      sfSympalFormToolkit::changeContentSlotValueWidget($this->object->type, $this);
+      sfSympalFormToolkit::changeContentSlotValueWidget($this->object, $this);
+    }
+  }
+  
+  public function doSave($con = null)
+  {
+    parent::doSave($con);
+    
+    /*
+     * If this is a column slot, then the value was actually set on the
+     * content record, meaning that we need to save that record
+     */
+    if ($this->getObject()->is_column)
+    {
+      $this->getObject()->getContentRenderedFor()->save($con);
     }
   }
 }

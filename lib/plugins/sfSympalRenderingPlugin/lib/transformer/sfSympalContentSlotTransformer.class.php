@@ -54,10 +54,16 @@ class sfSympalContentSlotTransformer
   /**
    * The public-facing method that will return the transformed content
    * 
+   * @param The value to transform
    * @return string The transformed content
    */
-  public function render()
+  public function render($value)
   {
+    if ($value !== null)
+    {
+      $this->setTransformedContent($value);
+    }
+    
     $this->process();
     
     $replacements = $this->getTokenReplacementValues();
@@ -77,8 +83,6 @@ class sfSympalContentSlotTransformer
    */
   protected function process()
   {
-    $this->setTransformedContent($this->getContentSlot()->getValueForRendering());
-    
     foreach ($this->getTransformerCallbacks() as $callback)
     {
       $this->setTransformedContent(call_user_func($callback, $this->getTransformedContent(), $this));
