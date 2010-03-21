@@ -1,0 +1,15 @@
+[sfSympalPlugin] Removing some directories, sync'ing with git repo
+--This line, and those below, will be ignored--
+
+D    test/fixtures/project/lib/model/doctrine/sfSympalAssetsPlugin/base
+D    test/fixtures/project/lib/model/doctrine/sfSympalBlogPlugin/base
+D    test/fixtures/project/lib/model/doctrine/sfDoctrineGuardPlugin/base
+D    test/fixtures/project/lib/model/doctrine/sfSympalMenuPlugin/base
+D    test/fixtures/project/lib/model/doctrine/sfSympalCommentsPlugin/base
+D    test/fixtures/project/lib/model/doctrine/sfSympalContentListPlugin/base
+D    test/fixtures/project/lib/model/doctrine/sfSympalPluginManagerPlugin/base
+D    test/fixtures/project/lib/model/doctrine/sfSympalPagesPlugin/base
+D    test/fixtures/project/lib/model/doctrine/sfSympalPlugin/base
+D    test/fixtures/project/web/sfPropelPlugin
+D    lib/plugins/sfSympalContentSyntaxPlugin/config
+D    lib/plugins/sfSympalRenderingPlugin/lib/slot
