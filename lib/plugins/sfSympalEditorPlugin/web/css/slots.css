@@ -25,16 +25,12 @@ a.sympal_slot_button:hover {
   color: #000;
 }
 
-/*
- * surrounds the inline form
- */
-.sympal_slot_form {
-  display: none;
-}
-
 /**
  * General form styles for slots
  */
+.sympal_slot_form {
+  color: #000;
+}
 .sympal_slot_form input,
 .sympal_slot_form select,
 .sympal_slot_form textarea {
@@ -58,13 +54,17 @@ a.sympal_slot_button:hover {
 	background:#ffffcc;
 }
 
+.sympal_slot_form textarea {
+  width: 95%;
+}
+
 .sympal_slot_form input.button {
   display: inline;
   width: auto !important;
 }
 
-.sympal_slot_form img.loading_anim {
-  display: none;
+.sympal_slot_form a {
+  color: #000;
 }
 
 /**
@@ -73,7 +73,7 @@ a.sympal_slot_button:hover {
 #sympal_slot_flash {
   position: absolute;
   z-index: 100;
-  right: 0;
+  right: 10px;
 }
 .sympal_notice, .sympal_error {
   background: #c5c5c5;
@@ -83,4 +83,15 @@ a.sympal_slot_button:hover {
   font-size: 16px;
   font-weight: bold;
   color: #000;
+}
+
+.droppable_active {
+  background: #ccc !important;
+}
+.droppable_hover {
+  background: #999 !important;
+}
+
+#sympal_assets_list li {
+  z-index: 10000 !important;
 }

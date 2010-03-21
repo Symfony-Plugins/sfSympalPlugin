@@ -38,7 +38,7 @@ class sfSympalEditorPluginConfiguration extends sfPluginConfiguration
     ;
     
     $menu->
-      addChild('Quit')->
+      addChild('Cancel')->
       isEditModeButton(true)->
       setShortcut('Ctrl+Shift+X')->
       setInputClass('sympal_disable_edit_mode')
@@ -83,16 +83,23 @@ class sfSympalEditorPluginConfiguration extends sfPluginConfiguration
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/js/jQuery.cookie.js'));
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/js/jQuery.elastic.js'));
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/js/jquery.Jcrop.min.js'));
+      
+      // Load in the metadata plugin
+      $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/js/jquery.metadata.js'));
 
       // Load tinymce
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/tiny_mce/tiny_mce.js'));
+      
+      // Load in the UI blocker
+      $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/js/jquery.blockUI.js'));
 
       // Load the sympal editor js and css
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/js/editor.js'));
       $response->addStylesheet(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/css/editor.css'));
       
       // Load the js and css for the slot editing
-      $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/js/slots.js'));
+      $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/js/slot.js'));
+      $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/js/slotEditor.js'));
       $response->addStylesheet(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/css/slots.css'));
 
       // Fancybox
@@ -104,6 +111,15 @@ class sfSympalEditorPluginConfiguration extends sfPluginConfiguration
       
       // Shortcuts
       $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/js/shortcuts.js'));
+      
+      // Load the individual slot javsascripts
+      // @todo The slot type javascript needs to be brought in dynamically
+      $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/js/slots/markdown.js'));
+      $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/js/slots/tinymce.js'));
+      
+      // Load the core javascript
+      $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/js/chooser.js'));
+      $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalEditorPlugin/js/core.js'));
 
       $this->_editorAssetsLoaded = true;
     }

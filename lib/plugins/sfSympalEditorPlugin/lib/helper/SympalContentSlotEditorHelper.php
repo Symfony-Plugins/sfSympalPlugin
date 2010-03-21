@@ -40,9 +40,8 @@ function get_sympal_inline_edit_bar_buttons()
  * 
  * @param sfForm  $form The form object for this slot
  * @param sfSympalContentSlot $contentSlot The content slot that is being modified
- * @param string $editMode The edit mode (e.g. in-place) for this form
  */
-function get_sympal_slot_form_tag(sfForm $form, sfSympalContentSlot $contentSlot, $editMode)
+function get_sympal_slot_form_tag(sfForm $form, sfSympalContentSlot $contentSlot)
 {
   $url = url_for('sympal_save_content_slot', array(
     'id' => $contentSlot->id,
@@ -50,9 +49,9 @@ function get_sympal_slot_form_tag(sfForm $form, sfSympalContentSlot $contentSlot
   ));
   
   $options = array(
-    'method' => 'post',
-    'class' => $editMode,
-    'id' => 'sympal_slot_form_'.$contentSlot->id,
+    'method'  => 'post',
+    'id'      => 'sympal_slot_form_'.$contentSlot->id,
+    'class'   => 'sympal_slot_form',
   );
   
   return $form->renderFormTag($url, $options);
@@ -70,7 +69,13 @@ function get_sympal_slot_form_tag(sfForm $form, sfSympalContentSlot $contentSlot
 function get_sympal_content_slot_editor($content, $slot, $options = array())
 {
   $slot->setContentRenderedFor($content);
-    
+      
+  // merge in some global default slot options
+  $options = array_merge(array(
+    'edit_mode' => sfSympalConfig::get('inline_editing', 'default_edit_mode'),
+    'view_url'  => url_for('sympal_content_slot_view', array('id' => $slot->id, 'content_id' => $slot->getContentRenderedFor()->id)),
+  ), $options);
+  
   // merge the default config for this slot into the given config
   $slotOptions = sfSympalConfig::get($slot->getContentRenderedFor()->Type->slug, 'content_slots', array());
   if (isset($slotOptions[$slot->name]))
@@ -78,10 +83,11 @@ function get_sympal_content_slot_editor($content, $slot, $options = array())
     $options = array_merge($slotOptions[$slot->name], $options);
   }
   
-  // merge in some edit defaults
-  $options = array_merge(array(
-    'edit_mode' => sfSympalConfig::get('inline_editing', 'default_edit_mode'),
-  ), $options);
+  /*
+   * Finally, override the "type" option, it should be set to whatever's
+   * in the database, regardless of what the original slot options were
+   */
+  $options['type'] = $slot->type;
   
   /*
    * Give the slot a default value if it's blank.
@@ -97,26 +103,15 @@ function get_sympal_content_slot_editor($content, $slot, $options = array())
   }
   
   $inlineContent = sprintf(
-    '<a href="#sympal_slot_wrapper_%s .sympal_slot_form" class="sympal_slot_button %s">'.__('Edit').'</a>',
-    $slot->id,
-    $options['edit_mode']
+    '<a href="%s" class="sympal_slot_button">'.__('Edit').'</a>',
+    url_for('sympal_content_slot_form', array('id' => $slot->id, 'content_id' => $slot->getContentRenderedFor()->id))
   );
   
   $inlineContent .= sprintf('<span class="sympal_slot_content">%s</span>', $renderedValue);
   
-  // render the form inline if this is in-place editing
-  $form = $slot->getEditForm();
-  $inlineContent .= sprintf(
-    '<span class="sympal_slot_form">%s</span>',
-    get_partial('sympal_edit_slot/slot_editor', array(
-      'form' => $form,
-      'contentSlot' => $slot,
-      'editMode' => $options['edit_mode'],
-    ))
-  );
-  
   return sprintf(
-    '<span class="sympal_slot_wrapper" id="sympal_slot_wrapper_%s">%s</span>',
+    '<span class="sympal_slot_wrapper %s" id="sympal_slot_wrapper_%s">%s</span>',
+    htmlentities(json_encode($options)),
     $slot->id,
     $inlineContent
   );
