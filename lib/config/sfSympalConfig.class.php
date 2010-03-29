@@ -34,7 +34,9 @@ class sfSympalConfig extends sfConfig
     )
     {
       return isset(self::$config['app_sympal_config_orm_cache']['queries'][$key]['lifetime']) ? self::$config['app_sympal_config_orm_cache']['queries'][$key]['lifetime'] : self::$config['app_sympal_config_orm_cache']['lifetime'];
-    } else {
+    }
+    else
+    {
       return false;
     }
   }
@@ -63,7 +65,9 @@ class sfSympalConfig extends sfConfig
     if ($name === null)
     {
       return isset(self::$config['app_sympal_config_'.$group]) ? self::$config['app_sympal_config_'.$group] : $default;
-    } else {
+    }
+    else
+    {
       return isset(self::$config['app_sympal_config_'.$group][$name]) ? self::$config['app_sympal_config_'.$group][$name] : $default;
     }
   }
@@ -78,10 +82,12 @@ class sfSympalConfig extends sfConfig
    */
   public static function set($group, $name, $value = null)
   {
-    if (is_null($value))
+    if ($value === null)
     {
       self::$config['app_sympal_config_'.$group] = $name;
-    } else {
+    }
+    else
+    {
       self::$config['app_sympal_config_'.$group][$name] = $value;
     }
   }
@@ -105,8 +111,11 @@ class sfSympalConfig extends sfConfig
       {
         $name = get_class($name);
       }
+
       return isset(self::$config['app_sympal_config_i18n']) && self::$config['app_sympal_config_i18n'] && isset(self::$config['app_sympal_config_internationalized_models'][$name]);
-    } else {
+    }
+    else
+    {
       return isset(self::$config['app_sympal_config_i18n']) && self::$config['app_sympal_config_i18n'];
     }
   }
@@ -140,6 +149,7 @@ class sfSympalConfig extends sfConfig
   public static function getAdminGeneratorTheme()
   {
     $theme = sfSympalConfig::get('themes', sfSympalConfig::get('admin_theme'));
+
     return isset($theme['admin_generator_theme']) ? $theme['admin_generator_theme'] : sfSympalConfig::get('default_admin_generator_theme', null, 'sympal_admin');
   }
 
@@ -151,6 +161,7 @@ class sfSympalConfig extends sfConfig
   public static function getAdminGeneratorClass()
   {
     $theme = sfSympalConfig::get('themes', sfSympalConfig::get('admin_theme'));
+
     return isset($theme['admin_generator_class']) ? $theme['admin_generator_class'] : sfSympalConfig::get('default_admin_generator_class', null, 'sfSympalDoctrineGenerator');
   }
 
@@ -165,17 +176,22 @@ class sfSympalConfig extends sfConfig
    */
   public static function writeSetting($group, $name, $value = null, $application = false)
   {
-    if (is_null($value))
+    // make sure we know our original values so we can call set later
+    $originalName = $name;
+    $originalValue = $value;
+
+    if ($value === null)
     {
       $value = $name;
-      $name = $group;
-      $group = null;
+      $name = null;
     }
 
     if ($application)
     {
       $path = sfConfig::get('sf_app_dir').'/config/app.yml';
-    } else {
+    }
+    else
+    {
       $path = sfConfig::get('sf_config_dir').'/app.yml';
     }
 
@@ -185,15 +201,16 @@ class sfSympalConfig extends sfConfig
     }
     $array = (array) sfYaml::load(file_get_contents($path));
 
-    if (is_null($group))
+    if ($name === null)
     {
-      $array['all']['sympal_config'][$name] = $value;
-    } else {
+      $array['all']['sympal_config'][$group] = $value;
+    }
+    else
+    {
       $array['all']['sympal_config'][$group][$name] = $value;
     }
 
-    self::set($group, $name, $value);
-
+    sfSympalConfig::set($group, $originalName, $originalValue);
     file_put_contents($path, sfYaml::dump($array, 4));
   }
 }

@@ -1,5 +1,21 @@
 <?php
 
+/**
+ * Context class for a Sympal instance
+ * 
+ * There is one Sympal instance for "site" (i.e. application)
+ * 
+ * This manages things such as
+ *   * The current sfSympalSite object
+ *   * The current menu item
+ *   * The current theme
+ * 
+ * @package     sfSympalPlugin
+ * @subpackage  util
+ * @author      Ryan Weaver <ryan@thatsquality.com>
+ * @since       2010-03-27
+ * @version     svn:$Id$ $Author$
+ */
 class sfSympalContext
 {
   protected static
@@ -8,12 +24,17 @@ class sfSympalContext
 
   protected
     $_site,
-    $_siteSlug,
+    $_siteSlug;
+  
+  protected
     $_sympalConfiguration,
-    $_symfonyContext,
+    $_symfonyContext;
+  
+  protected
     $_currentMenuItem,
-    $_currentContent,
-    $_currentSite,
+    $_currentContent;
+  
+  protected
     $_previousTheme,
     $_theme,
     $_themeObjects = array();
@@ -106,6 +127,7 @@ class sfSympalContext
         ->enableSympalResultCache('sympal_context_get_site')
         ->fetchOne();
     }
+
     return $this->_site;
   }
 
@@ -151,6 +173,10 @@ class sfSympalContext
     if (!isset($this->_themeObjects[$theme]))
     {
       $configurationArray = sfSympalConfig::get('themes', $theme);
+      if (!$configurationArray)
+      {
+        throw new sfException(sprintf('Cannot load them "%s" - no configuration found'));
+      }
       $configurationArray['name'] = $theme;
 
       $configurationClass = isset($configurationArray['config_class']) ? $configurationArray['class'] : 'sfSympalThemeConfiguration';
@@ -158,6 +184,7 @@ class sfSympalContext
       $configuration = new $configurationClass($configurationArray);
       $this->_themeObjects[$theme] = new $themeClass($this, $configuration);
     }
+
     return isset($this->_themeObjects[$theme]) ? $this->_themeObjects[$theme] : false;
   }
 
@@ -213,6 +240,11 @@ class sfSympalContext
   public function setTheme($theme)
   {
     $this->_theme = $theme;
+    if ($theme != $this->_theme)
+    {
+      $this->_previousTheme = $this->_theme;
+      $this->_theme = $theme;
+    }
   }
 
   /**
@@ -223,12 +255,12 @@ class sfSympalContext
    */
   public function loadTheme($name = null)
   {
-    $this->_previousTheme = $this->_theme;
     $theme = $name ? $name : $this->_theme;
     $this->setTheme($theme);
-    if ($theme = $this->getThemeObject($theme))
+
+    if ($themeObj = $this->getThemeObject($theme))
     {
-      $theme->load();
+      $themeObj->load();
     }
   }
 

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This class represents a "theme".
+ * This class represents the configuration for a "theme".
  * 
  * This wraps the configuration of a theme so it can be easily accessed.
  * 
@@ -97,17 +97,29 @@ class sfSympalThemeConfiguration
     return $path;
   }
 
+  /**
+   * If no stylesheets are defined, this returns some default css to
+   * load automatically.
+   * 
+   * The css will be THEME_NAME.css, and can live in a variety of dirs
+   * 
+   * @TODO Consider removing this idea or part of it - this feels magical.
+   */
   protected function _findStylesheetPath()
   {
     $name = $this->getName();
     if (strpos($this->getLayoutPath(), 'sfSympalPlugin/templates') !== false)
     {
       return '/sfSympalPlugin/css/' . $name . '.css';
-    } else {
+    }
+    else
+    {
       if (is_readable(sfConfig::get('sf_web_dir').'/css/'.$name.'.css'))
       {
         return $name;
-      } else {
+      }
+      else
+      {
         $configuration = sfContext::getInstance()->getConfiguration();
         $pluginPaths = $configuration->getAllPluginPaths();
 
