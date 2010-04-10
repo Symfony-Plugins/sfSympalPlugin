@@ -33,6 +33,7 @@ class sfSympalPluginConfiguration extends sfPluginConfiguration
       'sfWebBrowserPlugin',
       'sfJqueryReloadedPlugin',
       'sfImageTransformPlugin',
+      'sfSympalCMFPlugin',
       'sfSympalMenuPlugin',
       'sfSympalPluginManagerPlugin',
       'sfSympalPagesPlugin',
@@ -46,7 +47,9 @@ class sfSympalPluginConfiguration extends sfPluginConfiguration
       'sfSympalEditorPlugin',
       'sfSympalAssetsPlugin',
       'sfSympalContentSyntaxPlugin',
-      'sfSympalSearchPlugin'
+      'sfSympalSearchPlugin',
+      'sfSympalThemePlugin',
+      'sfSympalMinifyPlugin',
     );
 
   /**
@@ -62,6 +65,25 @@ class sfSympalPluginConfiguration extends sfPluginConfiguration
   public function initialize()
   {
     $this->sympalConfiguration = new sfSympalConfiguration($this->configuration);
+    
+    $this->configuration->getEventDispatcher()->connect('context.load_factories', array($this, 'bootstrapContext'));
+  }
+
+  /**
+   * Listens to the context.load_factories event and creates the sympal context
+   */
+  public function bootstrapContext(sfEvent $event)
+  {
+    sfSympalContext::createInstance($event->getSubject(), $this->getSympalConfiguration());
+    
+    // @TODO the helper should be broken up and moved, I don't like this call here
+    $this->configuration->loadHelpers(array(
+      'Sympal',
+      'I18N',
+      'Asset',
+      'Url',
+      'Partial',
+    ));
   }
 
   /**

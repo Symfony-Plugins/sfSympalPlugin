@@ -2,8 +2,8 @@ body {
   text-align: center;
 }
 
-#content {
-  background: #eee;
+#sympal-dashboard {
+  background: #f1f4f7;
   -khtml-border-radius:0.75em;
 	-moz-border-radius: 0.75em;
   -webkit-border-radius: 0.75em;
@@ -14,16 +14,27 @@ body {
   border: 1px solid #aaa;
   text-align: left;
   margin: auto;
+  color: #666;
+}
+#sympal-dashboard a {
+  color: #666;
+}
+
+#sympal-dashboard ul {
+  list-style-type: none;
+}
+#sympal-dashboard ul li {
+  margin-left: 0;
 }
 
 #sympal-dashboard h1 {
-  color: #002970;
+  color: #0098ea;
   font-size: 25px;
 }
 
 #sympal-dashboard .sympal_dashboard_box {
   float: left;
-  width: 175px;
+  width: 170px;
   background: #fff;
   margin-right: 10px;
   margin-top: 20px;
@@ -34,14 +45,19 @@ body {
 }
 
 #sympal-dashboard .sympal_dashboard_box h2 {
-  background: #1049A9;
-  color: #fff;
+  background: #ececec;
+  color: #0098ea;
   margin: 0;
   padding: 10px;
 }
 
 #sympal-dashboard .sympal_dashboard_box h2 a {
-  color: #fff;
+  color: #0098ea;
+  display: block;
+  text-decoration: none;
+}
+#sympal-dashboard .sympal_dashboard_box h2 a:hover {
+  color: #ff9600;
 }
 
 #sympal-dashboard .sympal_dashboard_box ul {
@@ -50,17 +66,24 @@ body {
 }
 
 #sympal-dashboard .sympal_dashboard_box ul li {
-  padding: 6px;
-  padding-left: 12px;
-  padding-right: 12px;
   border-top: 1px solid #ccc;
+  padding: 6px 12px;
 }
 
+#sympal-dashboard .sympal_dashboard_box ul li a {
+  text-decoration: none;
+  display: block;
+  padding: 3px 6px;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+  border: 1px solid #fff;
+}
 #sympal-dashboard .sympal_dashboard_box ul li a:hover {
-  font-weight: bold;
+  background: #f1f4f7;
+  border-color: #ececec;
 }
-
-#sympal-dashboard .sympal_dashboard_box ul li:before
+#sympal-dashboard .sympal_dashboard_box ul a:before
 {
   padding-top: 5px;
   content: ' » ';
@@ -88,15 +111,16 @@ body {
 }
 
 #sympal-dashboard-right {
-  background: #ccc;
+  background: #fff;
   -khtml-border-radius:0.75em;
 	-moz-border-radius: 0.75em;
   -webkit-border-radius: 0.75em;
   border-radius: 0.75em;
-  border: 1px solid #aaa;
+  border: 4px solid #ececec;
   width: 300px;
   float: right;
   padding: 8px;
+  margin-top: 40px;
 }
 
 #sympal-dashboard-right ul, #sympal-dashboard-right ul li {
@@ -107,18 +131,33 @@ body {
 }
 
 #sympal-dashboard-right ul li {
-  padding: 6px;
-  border-bottom: 1px solid #ccc;
+  font-size: 14px;
 }
-
+#sympal-dashboard-right ul li.main_section {
+  margin-top: 20px;
+}
+#sympal-dashboard-right ul li a {
+  font-size: 12px;
+  display: block;
+  padding: 6px;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+}
+#sympal-dashboard-right ul li a:hover {
+  background: #f1f4f7;
+  text-decoration: none;
+}
 #sympal-dashboard-right ul li label {
   display: block;
   padding: 0 1em 3px 0;
   float: left;
   text-align: left;
   width: 90%;
-  color: #002970;
-  font-weight: bold;
   font-size: 14px;
   cursor: pointer;
+}
+#sympal-dashboard-right ul li ul li {
+  padding-right: 0;
+  padding-left: 15px;
 }

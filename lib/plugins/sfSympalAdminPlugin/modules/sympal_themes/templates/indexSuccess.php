@@ -25,15 +25,15 @@
                 <?php echo button_to(__('Preview'), '@sympal_themes_preview?preview='.$name) ?>
               </td>
               <td>
-                <?php if ($name != sfSympalConfig::get('default_theme')): ?>
+                <?php if ($name != sfSympalConfig::get('theme', 'default_theme')): ?>
                   <?php echo button_to(__('Make Global Default'), '@sympal_themes_make_default?name='.$name) ?>
                 <?php endif; ?>
               </td>
               <td>
-                <?php if ($name != $sf_sympal_context->getSite()->getTheme()): ?>
-                  <?php echo button_to(__('Make %1% Default', array('%1%' => $sf_sympal_context->getSite()->getTitle())), '@sympal_themes_make_default?site=1&name='.$name) ?>
+                <?php if ($name != $sf_sympal_site->getTheme()): ?>
+                  <?php echo button_to(__('Make %1% Default', array('%1%' => $sf_sympal_site->getTitle())), '@sympal_themes_make_default?site=1&name='.$name) ?>
                 <?php else: ?>
-                  <?php echo button_to(__('Remove %1% Default', array('%1%' => $sf_sympal_context->getSite()->getTitle())), '@sympal_themes_make_default?site=1&name='.$name) ?>
+                  <?php echo button_to(__('Remove %1% Default', array('%1%' => $sf_sympal_site->getTitle())), '@sympal_themes_make_default?site=1&name='.$name) ?>
                 <?php endif; ?>
               </td>
             </tr>

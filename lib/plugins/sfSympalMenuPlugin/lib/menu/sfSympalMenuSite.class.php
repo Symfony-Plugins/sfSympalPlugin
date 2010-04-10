@@ -17,14 +17,6 @@ class sfSympalMenuSite extends sfSympalMenu
     return $this->_cacheKey;
   }
 
-  public function clearCache()
-  {
-    if ($cache = sfSympalConfiguration::getActive()->getCache())
-    {
-      return $cache->remove($this->_cacheKey);
-    }
-  }
-
   public function findMenuItem($menuItem)
   {
     if ($this->_menuItemArray['id'] == $menuItem['id'])
@@ -205,7 +197,7 @@ class sfSympalMenuSite extends sfSympalMenu
 
   public function isCurrent($bool = null)
   {
-    $currentMenuItem = sfSympalContext::getInstance()->getCurrentMenuItem();
+    $currentMenuItem = $this->getCurrentMenuItem();
 
     if ($currentMenuItem && $currentMenuItem->exists())
     {
@@ -217,7 +209,7 @@ class sfSympalMenuSite extends sfSympalMenu
 
   public function isCurrentAncestor()
   {
-    $menuItem = sfSympalContext::getInstance()->getCurrentMenuItem();
+    $menuItem = $this->getCurrentMenuItem();
     if ($menuItem && $this->_menuItemArray)
     {
       $this->_currentObject = $this->findMenuItem($menuItem);
@@ -225,6 +217,17 @@ class sfSympalMenuSite extends sfSympalMenu
     }
 
     return false;
+  }
+
+  /**
+   * @todo
+   * 
+   * Refactor this static call be injecting the menu_manager service
+   * as a dependency
+   */
+  protected function getCurrentMenuItem()
+  {
+    return sfSympalContext::getInstance()->getService('menu_manager')->getCurrentMenuItem();
   }
 
   public function getMenuItem()

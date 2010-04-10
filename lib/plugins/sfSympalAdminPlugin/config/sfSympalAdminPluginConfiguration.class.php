@@ -18,7 +18,16 @@ class sfSympalAdminPluginConfiguration extends sfPluginConfiguration
     $this->dispatcher->connect('sympal.load_admin_menu', array($this, 'loadAdminMenu'));
     $this->dispatcher->connect('sympal.load_config_form', array($this, 'loadConfigForm'));
     $this->dispatcher->connect('sympal.load_editor', array($this, 'loadEditor'));
-    $this->dispatcher->connect('context.load_factories', array($this, 'addAdminMenu'));
+    $this->dispatcher->connect('sympal.load', array($this, 'boostrap'));
+    
+    $this->dispatcher->connect('sympal.theme.set_theme_from_request', array($this, 'setThemeForAdminModule'));
+    
+    $configuration = new sfSympalAdminConfiguration();
+    $this->dispatcher->connect('sympal.configuration.method_not_found', array($configuration, 'extend'));
+    
+    // extend the actions class
+    $actions = new sfSympalAdminActions();
+    $this->dispatcher->connect('component.method_not_found', array($actions, 'extend'));
   }
 
   public function shouldLoadAdminMenu()
@@ -33,8 +42,11 @@ class sfSympalAdminPluginConfiguration extends sfPluginConfiguration
       && $request->getParameter('module') !== 'sympal_dashboard';
   }
 
-  public function addAdminMenu()
+  public function boostrap()
   {
+    $this->configuration->loadHelpers(array('SympalAdmin'));
+    
+    // load the admin menu
     if ($this->shouldLoadAdminMenu())
     {
       $this->loadAdminMenuAssets();
@@ -58,9 +70,25 @@ class sfSympalAdminPluginConfiguration extends sfPluginConfiguration
     $response->addJavascript(sfSympalConfig::getAssetPath('/sfSympalPlugin/fancybox/jquery.fancybox.js'));
   }
 
+  /**
+   * Listens to the response.filter_content event and adds the
+   * editor drop-down menu to the response
+   */
   public function addEditorHtml(sfEvent $event, $content)
   {
-    $this->configuration->loadHelpers(array('Admin'));
+    // See if the editor was disabled
+    if (!sfConfig::get('sympal.editor_menu', true))
+    {
+      return $content;
+    }
+    
+    $statusCode = $event->getSubject()->getStatusCode();
+    if ($statusCode == 404 || $statusCode == 500)
+    {
+      return $content;
+    }
+    
+    $this->configuration->loadHelpers(array('SympalAdmin'));
 
     $content = str_replace('</body>', get_sympal_admin_menu().'</body>', $content);
     return $content;
@@ -119,7 +147,7 @@ class sfSympalAdminPluginConfiguration extends sfPluginConfiguration
       ->setCredentials(array('ManageRedirects'));
 
     $siteAdministration
-      ->addChild('Edit Site', '@sympal_sites_edit?id='.sfSympalContext::getInstance()->getSite()->getId())
+      ->addChild('Edit Site', '@sympal_sites_edit?id='.sfSympalContext::getInstance()->getService('site_manager')->getSite()->getId())
       ->setCredentials(array('ManageSites'));
 
     $administration = $menu->getChild('Administration');
@@ -179,8 +207,8 @@ class sfSympalAdminPluginConfiguration extends sfPluginConfiguration
       $form->addSetting(null, 'default_culture', 'Default Culture', $widgetSchema['language'], $validatorSchema['language']);
     }
 
-    $array = sfSympalFormToolkit::getThemeWidgetAndValidator();
-    $form->addSetting(null, 'default_theme', 'Default Theme', $array['widget'], $array['validator']);
+    $array = sfSympalContext::getInstance()->getService('theme_form_toolkit')->getThemeWidgetAndValidator();
+    $form->addSetting('theme', 'default_theme', 'Default Theme', $array['widget'], $array['validator']);
 
     $form->addSetting(null, 'default_rendering_module', 'Default Rendering Module');
     $form->addSetting(null, 'default_rendering_action', 'Default Rendering Action');
@@ -275,6 +303,24 @@ class sfSympalAdminPluginConfiguration extends sfPluginConfiguration
           ->addChild(__('Publish'), '@sympal_publish_content?id='.$content['id'], 'title='.__('Has not been published yet. '.__('Click to publish content.')));
       }
     } 
-  
+  }
+
+  /**
+   * Listens to the sympal.theme.set_theme_from_request event and sets the
+   * theme to the admin theme if the current module is an admin module
+   */
+  public function setThemeForAdminModule(sfEvent $event)
+  {
+    $module = $event['context']->getRequest()->getParameter('module');
+    $adminModules = sfSympalConfig::get('admin_modules', null, array());
+    
+    if (array_key_exists($module, $adminModules))
+    {
+      $event->setReturnValue(sfSympalConfig::get('admin_theme', null, 'admin'));
+      
+      return true; // Set the event as processed
+    }
+    
+    return false; // Set the event as not processed
   }
 }

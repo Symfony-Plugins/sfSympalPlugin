@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * Base actions class for handling menu administration
+ * 
+ * @package     sfSympalMenuPlugin
+ * @subpackage  actions
+ * @author      Jonathan H. Wage <jonwage@gmail.com>
+ */
 class Basesympal_menu_itemsActions extends autoSympal_menu_itemsActions
 {
   public function preExecute()
@@ -11,7 +18,8 @@ class Basesympal_menu_itemsActions extends autoSympal_menu_itemsActions
 
   public function listenToAdminBuildQuery(sfEvent $event, Doctrine_Query $query)
   {
-    $query->andWhere('site_id = ?', sfSympalContext::getInstance()->getSite()->getId());
+    $query->andWhere('site_id = ?', sfSympalContext::getInstance()->getService('site_manager')->getSite()->getId());
+
     return $query;
   }
 
@@ -61,12 +69,14 @@ class Basesympal_menu_itemsActions extends autoSympal_menu_itemsActions
 
     $menuItem = $q->fetchOne();
     $this->forward404Unless($menuItem);
+
     return $menuItem;
   }
 
   protected function _publishMenuItem(sfSympalMenuItem $menuItem, $publish = true)
   {
     $func = $publish ? 'publish':'unpublish';
+
     return $menuItem->$func();
   }
 
@@ -125,7 +135,7 @@ class Basesympal_menu_itemsActions extends autoSympal_menu_itemsActions
 
     if ($this->sf_sympal_menu_item)
     {
-      $this->getSympalContext()->setCurrentMenuItem($this->sf_sympal_menu_item);
+      $this->getSympalContext()->getService('menu_manager')->setCurrentMenuItem($this->sf_sympal_menu_item);
     }
   }
 

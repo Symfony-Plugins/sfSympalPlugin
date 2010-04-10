@@ -2,6 +2,9 @@
 
 /**
  * Class responsible for adding new methods to your sfActions instances
+ * 
+ * Due to sfSympalExtendClass, this effectively extends sfActions, meaning
+ * you can literally call methods like ->getRequest() as you normally would
  *
  * @package sfSympalPlugin
  * @author Jonathan H. Wage <jonwage@gmail.com>
@@ -16,8 +19,7 @@ class sfSympalActions extends sfSympalExtendClass
   public function resetSympalRoutesCache()
   {
     // Reset the routes cache incase of the url changing or a custom url was added
-    return $this->getContext()->getConfiguration()->getPluginConfiguration('sfSympalPlugin')
-      ->getSympalConfiguration()->getCache()->resetRouteCache();
+    return $this->getSympalContext()->getService('cache_manager')->resetRouteCache();
   }
 
   /**
@@ -36,20 +38,6 @@ class sfSympalActions extends sfSympalExtendClass
   }
 
   /**
-   * Clear the menu cache from your actions
-   *
-   * @return void
-   */
-  public function clearMenuCache()
-  {
-    $files = glob(sfConfig::get('sf_cache_dir').'/'.sfConfig::get('sf_app').'/*/SYMPAL_MENU_*.cache');
-    foreach ((array) $files as $file)
-    {
-      unlink($file);
-    }
-  }
-
-  /**
    * Check if this request is an ajax request
    *
    * @return boolean
@@ -57,17 +45,8 @@ class sfSympalActions extends sfSympalExtendClass
   public function isAjax()
   {
     $request = $this->getRequest();
-    return $request->isXmlHttpRequest() || $request->getParameter('is_ajax');
-  }
 
-  /**
-   * Get the current sfSympalContext instance from your actions
-   *
-   * @return sfSympalContext $sympalContext
-   */
-  public function getSympalContext()
-  {
-    return sfSympalContext::getInstance();
+    return $request->isXmlHttpRequest() || $request->getParameter('is_ajax');
   }
 
   /**
@@ -119,15 +98,14 @@ class sfSympalActions extends sfSympalExtendClass
 
     if ($error)
     {
-      $this->getUser()->setFlash('error', sprintf(__('Sympal requires that some files and folders are writeable in your project. The file "%s" specifically is not writeable. Run the sympal:fix-perms task to fix or manually adjust the permissions.'), $check));
+      $this->getUser()->setFlash('error', sprintf(__(
+        'Sympal requires that some files and folders are writeable in your
+        project. The file "%s" specifically is not writeable. Run the
+        sympal:fix-perms task to fix or manually adjust the permissions.'
+      ), $check));
     }
 
-    if ($error)
-    {
-      return false;
-    } else {
-      return true;
-    }
+    return $error;
   }
 
   /**
@@ -137,64 +115,7 @@ class sfSympalActions extends sfSympalExtendClass
    */
   public function getSympalContentActionLoader()
   {
-    return $this->getSympalContext()->getSympalContentActionLoader($this->getSubject());
-  }
-
-  /**
-   * Load the given Sympal theme
-   *
-   * @param string $name 
-   * @return void
-   */
-  public function loadTheme($name)
-  {
-    $this->getSympalContext()->loadTheme($name);
-  }
-
-  /**
-   * Load a theme and if none given load the default theme
-   *
-   * @param string $name
-   * @return void
-   */
-  public function loadThemeOrDefault($name)
-  {
-    if ($name)
-    {
-      $this->getSympalContext()->loadTheme($name);
-    } else {
-      $this->getSympalContext()->loadTheme(sfSympalConfig::get('default_theme'));
-    }
-  }
-
-  /**
-   * Load the default theme from your actions
-   *
-   * @return void
-   */
-  public function loadDefaultTheme()
-  {
-    $this->loadTheme(sfSympalConfig::get('default_theme'));
-  }
-
-  /**
-   * Load the admin theme from your actions
-   *
-   * @return void
-   */
-  public function loadAdminTheme()
-  {
-    $this->loadTheme(sfSympalConfig::get('admin_theme', null, 'admin'));
-  }
-
-  /**
-   * Load the theme for the current site
-   *
-   * @return void
-   */
-  public function loadSiteTheme()
-  {
-    $this->loadThemeOrDefault($this->getSympalContext()->getSite()->getTheme());
+    return new sfSympalContentActionLoader($this->getSubject());
   }
 
   /**
@@ -312,5 +233,15 @@ class sfSympalActions extends sfSympalExtendClass
   public function refresh()
   {
     $this->redirect($this->getRequest()->getUri());
+  }
+
+  /**
+   * Get the current sfSympalContext instance from your actions
+   *
+   * @return sfSympalContext $sympalContext
+   */
+  public function getSympalContext()
+  {
+    return sfSympalContext::getInstance();
   }
 }

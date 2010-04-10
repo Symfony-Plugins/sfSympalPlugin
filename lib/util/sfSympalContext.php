@@ -3,15 +3,23 @@
 /**
  * Context class for a Sympal instance
  * 
- * There is one Sympal instance for "site" (i.e. application)
+ * A Sympal "context" is a singleton with respect to an individual sfSympalSite
+ * record. This is very similar to sfContext, which is a singleton with respect
+ * to each symfony app.
+ * 
+ * If some object has a dependency on a symfony app but NOT an sfSympalSite
+ * record, then it should be handled by sfContext. If it DOES have a
+ * dependency on the current sfSympalSite record, it'll be handled here
+ * on the sfSympalContext instance.
  * 
  * This manages things such as
  *   * The current sfSympalSite object
  *   * The current menu item
- *   * The current theme
+ *   * The current content object (sfSympalContent)
  * 
  * @package     sfSympalPlugin
  * @subpackage  util
+ * @author      Jonathan H. Wage <jonwage@gmail.com>
  * @author      Ryan Weaver <ryan@thatsquality.com>
  * @since       2010-03-27
  * @version     svn:$Id$ $Author$
@@ -21,12 +29,9 @@ class sfSympalContext
   protected static
     $_instances = array(),
     $_current;
-
-  protected
-    $_site,
-    $_siteSlug;
   
   protected
+    $_dispatcher,
     $_sympalConfiguration,
     $_symfonyContext;
   
@@ -35,100 +40,171 @@ class sfSympalContext
     $_currentContent;
   
   protected
-    $_previousTheme,
-    $_theme,
-    $_themeObjects = array();
+    $_serviceContainer;
 
+  /**
+   * Class constructor
+   * 
+   * @param sfSympalConfiguration $sympalConfiguration The Sympal configuration
+   * @param sfContext $symfonyContext The symfony context
+   */
   public function __construct(sfSympalConfiguration $sympalConfiguration, sfContext $symfonyContext)
   {
-    $this->_siteSlug = $symfonyContext->getConfiguration()->getApplication();
+    $this->_dispatcher = $symfonyContext->getEventDispatcher();
     $this->_sympalConfiguration = $sympalConfiguration;
     $this->_symfonyContext = $symfonyContext;
+    
+    $this->initialize();
   }
 
   /**
-   * Get the current sfSympalMenuItem instance for this sympal context
-   *
-   * @return sfSympalMenuItem
+   * Initializes sympal
    */
-  public function getCurrentMenuItem()
+  protected function initialize()
   {
-    if (!$this->_currentMenuItem)
+    // load the service container instance and then configure it
+    $this->loadServiceContainer();
+    $this->configureServiceContainer();
+
+    // enable modules based on sympal configuration
+    $this->_enableModules();
+
+    // register some listeners
+    $this->_registerExtendingClasses();
+    $this->_registerListeners();
+
+    // notify that sympal is done bootstrapping
+    $this->_dispatcher->notify(new sfEvent($this, 'sympal.load', array()));
+  }
+
+  /**
+   * Registers certain classes that extend core symfony classes
+   */
+  protected function _registerExtendingClasses()
+  {
+    // extend the component/action class
+    $actions = $this->getServiceContainer()->getService('actions_extended');
+    $this->_dispatcher->connect('component.method_not_found', array($actions, 'extend'));
+    
+    // extend the form class
+    $form = $this->getServiceContainer()->getService('form_extended');
+    $this->_dispatcher->connect('form.method_not_found', array($form, 'extend'));
+  }
+
+  /**
+   * Registeres needed event listeners
+   */
+  protected function _registerListeners()
+  {
+    // The controller.change_action event
+    new sfSympalControllerChangeActionListener($this->_dispatcher, $this);
+
+    // The template.filter_parameters event
+    new sfSympalTemplateFilterParametersListener($this->_dispatcher, $this);
+
+    // The form.post_configure event
+    new sfSympalFormPostConfigureListener($this->_dispatcher, $this);
+
+    // The form.filter_values event
+    new sfSympalFormFilterValuesListener($this->_dispatcher, $this);
+  }
+
+  /**
+   * Loads Sympal's service container
+   * 
+   * @link http://components.symfony-project.org/dependency-injection/trunk/book/06-Speed
+   */
+  protected function loadServiceContainer()
+  {
+    $autoloaderPath = $this->getSymfonyContext()
+      ->getConfiguration()
+      ->getPluginConfiguration('sfSympalPlugin')
+      ->getRootDir() . '/lib/vendor/service_container/lib/sfServiceContainerAutoloader.php';
+    
+    if (!file_exists($autoloaderPath))
     {
-      $this->_currentMenuItem = sfSympalMenuSiteManager::getInstance()->findCurrentMenuItem();
+      throw new sfException(sprintf(
+        'Cannot find the service container library at %s.
+        
+        If you are including sfSympalPlugin as a git submodule, be sure to run the following commands from inside the plugins/sfSympalPlugin directory:
+        
+         git submodule init
+         git submodule update',
+        $autoloaderPath
+      ));
     }
+    
+    sfServiceContainerAutoloader::register();
+    
+    $app = $this->getSymfonyContext()->getConfiguration()->getApplication();
+    $name = 'sfSympal'.$app.'ServiceContainer';
+    $path = sfConfig::get('sf_app_cache_dir').'/'.$name.'.php';
 
-    return $this->_currentMenuItem;
-  }
-
-  /**
-   * Set the current sfSympalMenuItem instance for this sympal context
-   *
-   * @param sfSympalMenuItem $menuItem
-   * @return void
-   */
-  public function setCurrentMenuItem(sfSympalMenuItem $menuItem)
-  {
-    $this->_currentMenuItem = $menuItem;
-  }
-
-  /**
-   * Get the current sfSympalContent instance for this sympal context
-   *
-   * @return sfSympalContent $content
-   */
-  public function getCurrentContent()
-  {
-    return $this->_currentContent;
-  }
-
-  /**
-   * Set the current sfSympalContent instance for this sympal context
-   *
-   * @param sfSympalContent $content 
-   * @return void
-   */
-  public function setCurrentContent(sfSympalContent $content)
-  {
-    $this->_currentContent = $content;
-    if (!$this->_site)
+    if (!sfConfig::get('sf_debug') && file_exists($path))
     {
-      $this->_site = $content->getSite();
+      require_once $path;
+      $this->_serviceContainer = new $name();
     }
-    if ($menuItem = $content->getMenuItem())
+    else
     {
-      $this->_currentMenuItem = $menuItem;
+      // build the service container dynamically
+      $this->_serviceContainer = new sfServiceContainerBuilder();
+      $loader = new sfServiceContainerLoaderFileYaml($this->_serviceContainer);
+      
+      $configPaths = $this->getSymfonyContext()->getConfiguration()->getConfigPaths('config/sympal_services.yml');
+      $loader->load($configPaths);
+      
+      // if not in debug, write the service container to file
+      if (!sfConfig::get('sf_debug'))
+      {
+        $dumper = new sfServiceContainerDumperPhp($this->_serviceContainer);
+
+        file_put_contents($path, $dumper->dump(array(
+          'class'       => $name,
+          'base_class'  => sfSympalConfig::get('service_container', 'base_class', 'sfServiceContainer'),
+        )));
+      }
     }
   }
 
   /**
-   * Set the current sfSympalSite instance for this sympal context
-   *
-   * @param sfSympalSite $site 
-   * @return void
+   * Configures the service container.
+   * 
+   * This adds services (both symfony and Sympal services) needed in
+   * the service container
    */
-  public function setSite(sfSympalSite $site)
+  protected function configureServiceContainer()
   {
-    $this->_site = $site;
+    $sc = $this->getServiceContainer();
+    $context = $this->getSymfonyContext();
+    
+    $sc->setService('dispatcher',       $context->getEventDispatcher());
+    $sc->setService('user',             $context->getUser());
+    $sc->setService('response',         $context->getResponse());
+    $sc->setService('logger',           $context->getLogger());
+    $sc->setService('config_cache',     $context->getConfigCache());
+    $sc->setService('controller',       $context->getController());
+    $sc->setService('request',          $context->getRequest());
+    $sc->setService('routing',          $context->getRouting());
+    if (sfConfig::get('sf_i18n'))
+    {
+      $sc->setService('i18n',             $context->getI18n());
+    }
+    
+    $sc->setService('context',          $context);
+    
+    $sc->setService('sympal_configuration', $this->getSympalConfiguration());
+    $sc->setService('sympal_context',       $this);
   }
 
   /**
-   * Get the current sfSympalSite instance for this sympal context
-   *
-   * @return sfSympalSite $site
+   * Helper method to retrieve a service
+   * 
+   * @param string $name The name of the service to retrieve
    */
-  public function getSite()
+  public function getService($name)
   {
-    if (!$this->_site)
-    {
-      $this->_site =  Doctrine_Core::getTable('sfSympalSite')
-        ->createQuery('s')
-        ->where('s.slug = ?', $this->_siteSlug)
-        ->enableSympalResultCache('sympal_context_get_site')
-        ->fetchOne();
-    }
-
-    return $this->_site;
+    return $this->getServiceContainer()->getService($name);
   }
 
   /**
@@ -139,129 +215,6 @@ class sfSympalContext
   public function shouldLoadFrontendEditor()
   {
     return $this->_symfonyContext->getConfiguration()->getPluginConfiguration('sfSympalEditorPlugin')->shouldLoadEditor();
-  }
-
-  /**
-   * Get the current site slug
-   *
-   * @return string $siteSlug
-   */
-  public function getSiteSlug()
-  {
-    return $this->_siteSlug;
-  }
-
-  /**
-   * Get the current theme
-   *
-   * @return string $theme
-   */
-  public function getTheme()
-  {
-    return $this->_theme;
-  }
-
-  /**
-   * Get the theme object for the current theme or a given theme name
-   *
-   * @param string $name 
-   * @return sfSympalTheme $theme
-   */
-  public function getThemeObject($name = null)
-  {
-    $theme = $name ? $name : $this->_theme;
-    if (!isset($this->_themeObjects[$theme]))
-    {
-      $configurationArray = sfSympalConfig::get('themes', $theme);
-      if (!$configurationArray)
-      {
-        throw new sfException(sprintf('Cannot load them "%s" - no configuration found'));
-      }
-      $configurationArray['name'] = $theme;
-
-      $configurationClass = isset($configurationArray['config_class']) ? $configurationArray['class'] : 'sfSympalThemeConfiguration';
-      $themeClass = isset($configurationArray['theme_class']) ? $configurationArray['theme_class'] : 'sfSympalTheme';
-      $configuration = new $configurationClass($configurationArray);
-      $this->_themeObjects[$theme] = new $themeClass($this, $configuration);
-    }
-
-    return isset($this->_themeObjects[$theme]) ? $this->_themeObjects[$theme] : false;
-  }
-
-  /**
-   * Get array of all instantiated theme objects
-   *
-   * @return array $themeObjects
-   */
-  public function getThemeObjects()
-  {
-    return $this->_themeObjects;
-  }
-
-  /**
-   * Shortcut to check if we are inside an admin module
-   *
-   * @return boolean
-   */
-  public function isAdminModule()
-  {
-    return $this->_sympalConfiguration->isAdminModule();
-  }
-
-  /**
-   * Get the previous theme object that was loaded
-   *
-   * @return sfSympalTheme $theme
-   */
-  public function getPreviousTheme()
-  {
-    return $this->getThemeObject($this->_previousTheme);
-  }
-
-  /**
-   * Unload the previous theme object that was loaded
-   *
-   * @return void
-   */
-  public function unloadPreviousTheme()
-  {
-    if ($previousTheme = $this->getPreviousTheme())
-    {
-      $previousTheme->unload();
-    }
-  }
-
-  /**
-   * Set the current theme name
-   *
-   * @param string $theme 
-   * @return void
-   */
-  public function setTheme($theme)
-  {
-    $this->_theme = $theme;
-    if ($theme != $this->_theme)
-    {
-      $this->_previousTheme = $this->_theme;
-      $this->_theme = $theme;
-    }
-  }
-
-  /**
-   * Load a given theme or the current configured theme in ->_theme
-   *
-   * @param string $name Optional theme name to load
-   * @return void
-   */
-  public function loadTheme($name = null)
-  {
-    $theme = $name ? $name : $this->_theme;
-    $this->setTheme($theme);
-
-    if ($themeObj = $this->getThemeObject($theme))
-    {
-      $themeObj->load();
-    }
   }
 
   /**
@@ -284,6 +237,11 @@ class sfSympalContext
     return $this->_symfonyContext;
   }
 
+  public function getApplicationConfiguration()
+  {
+    return $this->getSympalConfiguration()->getProjectConfiguration();
+  }
+
   /**
    * Get a sfSympalContentRenderer instance for a given sfSympalContent instance
    *
@@ -297,14 +255,41 @@ class sfSympalContext
   }
 
   /**
-   * Get a sfSympalContentActionLoader instance for a given sfActions instance
+   * Handle the enabling of modules.
+   * 
+   * Either enables all modules or only modules defined by enabled_modules.
+   * In either case, the modules in disabled_modules are disabled
    *
-   * @param sfActions $actions 
-   * @return sfSympalContentActionLoader $loader
+   * @return void
    */
-  public function getSympalContentActionLoader(sfActions $actions)
+  private function _enableModules()
   {
-    return new sfSympalContentActionLoader($actions);
+    $modules = sfConfig::get('sf_enabled_modules', array());
+    if (sfSympalConfig::get('enable_all_modules'))
+    {
+      $modules = array_merge($modules, $this->getSympalConfiguration()->getModules());
+    }
+    else
+    {
+      $modules = array_merge($modules, sfSympalConfig::get('enabled_modules', null, array()));
+    }
+
+    if ($disabledModules = sfSympalConfig::get('disabled_modules', null, array()))
+    {
+      $modules = array_diff($modules, $disabledModules);
+    }
+
+    sfConfig::set('sf_enabled_modules', $modules);
+  }
+
+  /**
+   * Returns the service container instance
+   * 
+   * @return sfServiceContainer
+   */
+  public function getServiceContainer()
+  {
+    return $this->_serviceContainer;
   }
 
   /**
@@ -351,12 +336,75 @@ class sfSympalContext
    */
   public static function createInstance(sfContext $symfonyContext, sfSympalConfiguration $sympalConfiguration)
   {
-    $site = $symfonyContext->getConfiguration()->getApplication();
+    $name = $symfonyContext->getConfiguration()->getApplication();
 
     $instance = new self($sympalConfiguration, $symfonyContext);
-    self::$_instances[$site] = $instance;
+    self::$_instances[$name] = $instance;
     self::$_current = $instance;
 
-    return self::$_instances[$site];
+    return self::$_instances[$name];
   }
+
+  /**
+   * Calls methods defined via sfEventDispatcher.
+   *
+   * @param string $method The method name
+   * @param array  $arguments The method arguments
+   *
+   * @return mixed The returned value of the called method
+   *
+   * @throws sfException If called method is undefined
+   */
+  public function __call($method, $arguments)
+  {
+    $event = $this->_dispatcher->notifyUntil(new sfEvent($this, 'sympal.context.method_not_found', array('method' => $method, 'arguments' => $arguments)));
+    if (!$event->isProcessed())
+    {
+      throw new sfException(sprintf('Call to undefined method %s::%s.', get_class($this), $method));
+    }
+
+    return $event->getReturnValue();
+  }
+
+  /**
+   * Deprecated Functions
+   */
+  
+  protected function warnDeprecated($method, $service)
+  {
+    $this->_dispatcher->notify(new sfEvent($this, 'application.log', array(
+      'priority' => sfLogger::WARNING,
+      sprintf('Method sfSympalContent::%s is deprecated. Use sfSympalContext->getService(\'%s\')->%s()', $method, $service, $method),
+    )));
+  }
+  
+  /**
+   * @deprecated
+   */
+  public function getCurrentContent()
+  {
+    $this->warnDeprecated('getCurrentContent', 'site_manager');
+    
+    return $this->getService('site_manager')->getCurrentContent();
+  }
+  /**
+   * @deprecated
+   */
+  public function setCurrentContent(sfSympalContent $content)
+  {
+    $this->warnDeprecated('setCurrentContent', 'site_manager');
+    
+    return $this->getService('site_manager')->setCurrentContent($content);
+  }
+  
+  /**
+   * @deprecated
+   */
+  public function getCurrentMenuItem()
+  {
+    $this->warnDeprecated('getCurrentMenuItem', 'menu_manager');
+    
+    return $this->getService('menu_manager')->getCurrentMenuItem();
+  }
+  
 }

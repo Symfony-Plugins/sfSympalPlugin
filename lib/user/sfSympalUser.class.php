@@ -45,7 +45,7 @@ class sfSympalUser extends sfGuardSecurityUser
    */
   public function doIsEditModeCheck()
   {
-    $content = sfSympalContext::getInstance()->getCurrentContent();
+    $content = sfSympalContext::getInstance()->getService('site_manager')->getCurrentContent();
     if (($content && $content->getPubliclyEditable())
       || ($content && $content->getAllEditPermissions() && $this->hasCredential($content->getAllEditPermissions()))
       || ($this->isAuthenticated() && $this->hasCredential('ManageContent'))
@@ -127,27 +127,6 @@ class sfSympalUser extends sfGuardSecurityUser
       throw new sfStopException();
     }
     return $access;
-  }
-
-  /**
-   * Set the current theme for the users session
-   *
-   * @param string $theme
-   * @return void
-   */
-  public function setCurrentTheme($theme)
-  {
-    $this->setAttribute('sympal_current_theme', $theme);
-  }
-
-  /**
-   * Get the current theme for the users session
-   *
-   * @return string $theme
-   */
-  public function getCurrentTheme()
-  {
-    return $this->getAttribute('sympal_current_theme');
   }
 
   /**

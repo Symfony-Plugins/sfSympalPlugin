@@ -153,13 +153,13 @@ class Basesympal_contentActions extends autoSympal_contentActions
   {
     $contentType = Doctrine_Core::getTable('sfSympalContent')
       ->createQuery('c')
-      ->select('t.name')
+      ->select('t.name, c.id')
       ->leftJoin('c.Type t')
       ->where('c.id = ?', $id)
       ->execute(array(), Doctrine_Core::HYDRATE_NONE);
 
     $this->sf_sympal_content = Doctrine_Core::getTable('sfSympalContent')
-      ->getFullTypeQuery($contentType[0][0])
+      ->getFullTypeQuery($contentType[0][1])
       ->where('c.id = ?', $id)
       ->fetchOne();
 
@@ -179,10 +179,6 @@ class Basesympal_contentActions extends autoSympal_contentActions
     $user->checkContentSecurity($this->sf_sympal_content);
 
     $this->getSympalContext()->setCurrentContent($this->sf_sympal_content);
-    if ($menuItem = $this->sf_sympal_content->getMenuItem())
-    {
-      $this->getSympalContext()->setCurrentMenuItem($this->sf_sympal_content->getMenuItem());
-    }
 
     $this->getResponse()->setTitle('Sympal Admin / Editing '.$this->sf_sympal_content);
 
@@ -193,10 +189,6 @@ class Basesympal_contentActions extends autoSympal_contentActions
   {
     $this->sf_sympal_content = $this->_getContent($request);
     $this->getSympalContext()->setCurrentContent($this->sf_sympal_content);
-    if ($menuItem = $this->sf_sympal_content->getMenuItem())
-    {
-      $this->getSympalContext()->setCurrentMenuItem($this->sf_sympal_content->getMenuItem());
-    }
     $this->getSympalContext()->getContentRenderer($this->sf_sympal_content)->render();
 
     $this->dispatcher->notify(new sfEvent($this, 'sympal.load_content', array('content' => $this->sf_sympal_content)));

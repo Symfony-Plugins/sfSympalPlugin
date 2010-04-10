@@ -62,6 +62,7 @@ abstract class Basesympal_adminActions extends sfActions
       {
         $values = $this->form->getValues(); 
         $this->getUser()->signin($values['user'], array_key_exists('remember', $values) ? $values['remember'] : false);
+
         return $this->redirect('@sympal_dashboard');
       }
     }
@@ -117,5 +118,6 @@ abstract class Basesympal_adminActions extends sfActions
   public function executePhpinfo(sfWebRequest $request)
   {
     $this->setLayout(false);
+    $this->enableEditor(false);
   }
 }

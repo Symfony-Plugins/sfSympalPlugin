@@ -84,7 +84,7 @@ class sfSympalFormToolkit
         ->createQuery('c')
         ->leftJoin('c.Type t')
         ->leftJoin('c.MenuItem m')
-        ->where('c.site_id = ?', sfSympalContext::getInstance()->getSite()->getId())
+        ->where('c.site_id = ?', sfSympalContext::getInstance()->getService('site_manager')->getSite()->getId())
         ->orderBy('m.root_id, m.lft');
 
       if ($add)
@@ -199,17 +199,11 @@ class sfSympalFormToolkit
      */
     if ($widgetClass && $validatorClass)
     {
-      $widgetSchema['value'] = new $widgetClass($widgetOptions, array('class'=> 'slot_'.strtolower($type)));
-      $validatorSchema['value'] = new $validatorClass($validatorOptions);
-    }
-    elseif ($slot->is_column)
-    {
-      $contentForm = $slot->getContentSlotColumnForm();
-      $contentWidgetSchema = $contentForm->getWidgetSchema();
-      $contentValidatorSchema = $contentForm->getValidatorSchema();
+      // If this is a column slot, then its actual field name is the name of the slot
+      $fieldName = $slot->is_column ? $slot->name : 'value';
       
-      $widgetSchema['value'] = $contentForm->getWidgetSchema()->offsetGet($slot->name);
-      $validatorSchema['value'] = $contentForm->getValidatorSchema()->offsetGet($slot->name);
+      $widgetSchema[$fieldName] = new $widgetClass($widgetOptions, array('class'=> 'slot_'.strtolower($type)));
+      $validatorSchema[$fieldName] = new $validatorClass($validatorOptions);
     }
   }
 
@@ -255,9 +249,13 @@ class sfSympalFormToolkit
     if ($form instanceof sfSympalContentForm)
     {
       $type = $form->getObject()->getType()->getSlug();
-    } else if ($form instanceof sfSympalContentTypeForm) {
+    }
+    else if ($form instanceof sfSympalContentTypeForm)
+    {
       $type = $form->getObject()->getSlug();
-    } else {
+    }
+    else
+    {
       return false;
     }
 
@@ -274,29 +272,7 @@ class sfSympalFormToolkit
       'choices'   => array_keys($options),
       'required' => false
     ));
-    return array('widget' => $widget, 'validator' => $validator);
-  }
 
-  /**
-   * Get the theme and widget validator
-   *
-   * @return array $widgetAndValidator
-   */
-  public static function getThemeWidgetAndValidator()
-  {
-    $themes = sfContext::getInstance()->getConfiguration()->getPluginConfiguration('sfSympalPlugin')->getSympalConfiguration()->getAvailableThemes();
-    $options = array('' => '');
-    foreach ($themes as $name => $theme)
-    {
-      $options[$name] = sfInflector::humanize($name);
-    }
-    $widget = new sfWidgetFormChoice(array(
-      'choices'   => $options
-    ));
-    $validator = new sfValidatorChoice(array(
-      'choices'   => array_keys($options),
-      'required' => false
-    ));
     return array('widget' => $widget, 'validator' => $validator);
   }
 }
