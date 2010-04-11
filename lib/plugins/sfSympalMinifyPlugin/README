@@ -1,0 +1,3 @@
+Asset minification for Sympal. http://www.sympalphp.org
+
+This plugin is based in principle and code on Nicolas Perriault's npAssetsOptimizerPlugin http://www.symfony-project.org/plugins/npAssetsOptimizerPlugin
